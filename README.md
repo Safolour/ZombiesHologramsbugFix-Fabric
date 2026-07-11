@@ -1,95 +1,95 @@
 # Zombies Holograms-bug Fix
 
-Zombies Holograms-bug Fix（ZHF）是一个纯客户端 Fabric Mod，用于修复 Minecraft 服务器中由全息文字 Armor Stand 引起的目标选择和右键交互问题。
+Zombies Holograms-bug Fix (ZHF) is a client-side Fabric mod that fixes targeting and right-click interaction problems caused by hologram armor stands on Minecraft servers.
 
-许多服务器使用隐形 Armor Stand 显示名称、血量和提示文字。这些实体可能挡住玩家准星，使后方的实体或方块无法正常被选中。开启 ZHF 后，Armor Stand 将不会参与客户端准星实体检测，同时 Mod 会保持正常的实体、方块和物品使用流程。
+Many servers use invisible armor stands to display names, health values, and other floating text. These entities can block the player's crosshair and prevent entities or blocks behind them from being targeted correctly. When ZHF is enabled, armor stands are excluded from client-side crosshair entity detection while normal entity, block, and item interactions are preserved.
 
-## 功能
+## Features
 
-- 按 `Z` 开启或关闭 ZHF
-- 在准星目标检测中忽略 Armor Stand
-- 保持实体交互、方块交互及物品使用逻辑
-- 在屏幕右上角显示当前开关状态
-- 切换状态时在聊天栏显示提示
-- 可选择忽略方块右键反应
-- 可选择禁用右键方块时的挥手动画
-- 支持通过 Mod Menu 和快捷键打开配置界面
-- 配置自动保存到游戏配置目录
-- 纯客户端运行，不要求服务端安装
+- Toggle ZHF with the `Z` key
+- Exclude armor stands from crosshair entity detection
+- Preserve entity interactions, block interactions, and item use
+- Display the current ZHF state in the top-right corner of the screen
+- Show a chat message when ZHF is toggled
+- Optionally ignore right-click block reactions
+- Optionally disable the hand swing animation when right-clicking blocks
+- Open the configuration screen through Mod Menu or a configurable key binding
+- Save settings automatically in the game configuration directory
+- Run entirely on the client without requiring server-side installation
 
-## 支持版本
+## Supported Versions
 
-| Minecraft 版本 | Mod 文件 |
+| Minecraft version | Mod file |
 | --- | --- |
 | 1.21.5 | `ZombiesHologramsbugFix-Fabric-2.0.0+1.21.5.jar` |
 | 1.21.6–1.21.8 | `ZombiesHologramsbugFix-Fabric-2.0.0+1.21.6-1.21.8.jar` |
 | 1.21.9–1.21.10 | `ZombiesHologramsbugFix-Fabric-2.0.0+1.21.9-1.21.10.jar` |
 | 1.21.11 | `ZombiesHologramsbugFix-Fabric-2.0.0+1.21.11.jar` |
 
-## 依赖
+## Dependencies
 
 - Fabric Loader
 - Fabric API
 - Cloth Config API
-- Mod Menu（可选，用于从 Mod 列表打开配置界面）
+- Mod Menu (optional, provides access to the configuration screen from the mod list)
 
-请安装与当前 Minecraft 版本对应的依赖版本。
+Install dependency versions compatible with your Minecraft version.
 
-## 安装
+## Installation
 
-1. 安装对应 Minecraft 版本的 Fabric Loader。
-2. 下载适用于该版本的 ZHF JAR。
-3. 将 ZHF、Fabric API 和 Cloth Config API 放入 `.minecraft/mods`。
-4. 如需从 Mod 列表打开配置界面，同时安装 Mod Menu。
-5. 启动游戏。
+1. Install Fabric Loader for your Minecraft version.
+2. Download the ZHF JAR that supports your Minecraft version.
+3. Place ZHF, Fabric API, and Cloth Config API in `.minecraft/mods`.
+4. Optionally install Mod Menu to access the configuration screen from the mod list.
+5. Start the game.
 
-## 使用
+## Usage
 
-默认按键：
+Default key bindings:
 
-- `Z`：开启或关闭 ZHF
-- `Config`：默认未绑定，可在游戏按键设置中自行绑定
+- `Z`: Enable or disable ZHF
+- `Config`: Unbound by default; assign a key in the Minecraft Controls menu
 
-HUD 会在屏幕右上角显示：
+The HUD in the top-right corner shows the current state:
 
-- `ZHF: ON`：功能已开启
-- `ZHF: OFF`：功能已关闭
+- `ZHF: ON`: ZHF is enabled
+- `ZHF: OFF`: ZHF is disabled
 
-## 配置
+## Configuration
 
-配置界面提供以下选项：
+The configuration screen contains the following options.
 
 ### Ignore Block Reactions
 
-忽略准星所指方块的右键反应，使物品使用不被方块交互抢占。该选项默认关闭。
+Ignores right-click reactions from the block under the crosshair so block interaction does not take priority over item use. This option is disabled by default.
 
 ### Disable Right Click Swinging
 
-禁用成功右键方块时的客户端挥手动画。该选项默认开启。
+Disables the client-side hand swing animation after a successful right-click block interaction. This option is enabled by default.
 
-配置文件位于：
+The configuration file is stored at:
 
 ```text
 .minecraft/config/zombieshologramsbugfix.json
 ```
 
-## 构建
+## Building
 
-项目使用 Java 21、Gradle 和 Fabric Loom，并采用 Mojang mappings。
+The project uses Java 21, Gradle, Fabric Loom, and Mojang mappings.
 
-默认构建目标为 Minecraft 1.21.5：
+The default build target is Minecraft 1.21.5:
 
 ```bash
 ./gradlew build
 ```
 
-指定 Minecraft 与 Fabric API 版本：
+To specify Minecraft and Fabric API versions:
 
 ```bash
 ./gradlew build -Pminecraft_version=1.21.11 -Pfabric_version=0.141.4+1.21.11
 ```
 
-构建产物位于：
+Build artifacts are generated in:
 
 ```text
 build/libs
