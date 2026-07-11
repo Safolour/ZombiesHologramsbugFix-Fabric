@@ -17,8 +17,9 @@ public final class ZhfConfigScreen {
                 .setTitle(Component.literal("ZHF Configuration"));
         ConfigCategory general = builder.getOrCreateCategory(Component.literal("General"));
         general.addEntry(builder.entryBuilder()
-                .startBooleanToggle(Component.literal("(DANGER) ").withStyle(ChatFormatting.RED)
-                        .append(Component.literal("Ignore Block Reactions").withStyle(ChatFormatting.WHITE)),
+                .startBooleanToggle(Component.empty()
+                        .append(Component.literal("(DANGER) ").withStyle(ChatFormatting.RED))
+                        .append(Component.literal("Ignore Block Reactions")),
                         config.ignoreBlockReactions)
                 .setDefaultValue(false)
                 .setTooltip(Component.literal("Ignore Block Reactions"))
