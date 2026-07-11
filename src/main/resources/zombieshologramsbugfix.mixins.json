@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "com.seosean.zombieshologramsbugfix.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "${entity_pick_mixin}",
+    "MinecraftMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

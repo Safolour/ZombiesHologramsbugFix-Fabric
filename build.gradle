@@ -1,0 +1,153 @@
+plugins {
+    id 'fabric-loom' version '1.17.13'
+    id 'maven-publish'
+}
+
+version = "${project.mod_version}+${project.minecraft_version}"
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.shedaniel.me/' }
+    maven { url = 'https://maven.terraformersmc.com/releases/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+}
+
+sourceSets.main.java {
+    srcDirs = ['src/main/java', layout.buildDirectory.dir('generated/compat/java')]
+    if ((project.minecraft_version.tokenize('.')[2] as int) >= 11) {
+        exclude 'com/seosean/zombieshologramsbugfix/mixin/GameRendererMixin.java'
+    }
+}
+
+processResources {
+    def minecraftConstraint = project.findProperty('minecraft_constraint') ?: project.minecraft_version
+    inputs.properties version: project.version, minecraft_version: project.minecraft_version,
+            minecraft_constraint: minecraftConstraint, loader_version: project.loader_version
+    filesMatching('fabric.mod.json') {
+        expand version: project.version, minecraft_version: minecraftConstraint,
+                loader_version: project.loader_version
+    }
+    filesMatching('zombieshologramsbugfix.mixins.json') {
+        expand entity_pick_mixin: (project.minecraft_version.tokenize('.')[2] as int) >= 11
+                ? 'LocalPlayerMixin' : 'GameRendererMixin'
+    }
+}
+
+tasks.register('generateCompatSource') {
+    def outputDir = layout.buildDirectory.dir('generated/compat/java/com/seosean/zombieshologramsbugfix')
+    inputs.property 'minecraft_version', project.minecraft_version
+    outputs.dir outputDir
+    doLast {
+        def dir = outputDir.get().asFile
+        project.delete(dir)
+        dir.mkdirs()
+        def patch = project.minecraft_version.tokenize('.')[2] as int
+        new File(dir, 'KeyBindingCompat.java').text = patch >= 11 ? '''package com.seosean.zombieshologramsbugfix;
+
+import net.minecraft.client.KeyMapping;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.resources.Identifier;
+
+public final class KeyBindingCompat {
+    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
+            Identifier.fromNamespaceAndPath(ZombiesHologramsbugFixClient.MOD_ID, "main"));
+    private KeyBindingCompat() {}
+    public static KeyMapping create(String name, int key) {
+        return new KeyMapping(name, InputConstants.Type.KEYSYM, key, CATEGORY);
+    }
+}''' : patch >= 9 ? '''package com.seosean.zombieshologramsbugfix;
+
+import net.minecraft.client.KeyMapping;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.resources.ResourceLocation;
+
+public final class KeyBindingCompat {
+    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
+            ResourceLocation.fromNamespaceAndPath(ZombiesHologramsbugFixClient.MOD_ID, "main"));
+    private KeyBindingCompat() {}
+    public static KeyMapping create(String name, int key) {
+        return new KeyMapping(name, InputConstants.Type.KEYSYM, key, CATEGORY);
+    }
+}''' : '''package com.seosean.zombieshologramsbugfix;
+
+import net.minecraft.client.KeyMapping;
+import com.mojang.blaze3d.platform.InputConstants;
+
+public final class KeyBindingCompat {
+    private KeyBindingCompat() {}
+    public static KeyMapping create(String name, int key) {
+        return new KeyMapping(name, InputConstants.Type.KEYSYM, key, "key.categories.zombieshologramsbugfix");
+    }
+}'''
+        if (patch >= 11) {
+            def mixinDir = new File(dir, 'mixin')
+            mixinDir.mkdirs()
+            new File(mixinDir, 'LocalPlayerMixin.java').text = '''package com.seosean.zombieshologramsbugfix.mixin;
+
+import com.seosean.zombieshologramsbugfix.ZombiesHologramsbugFixClient;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import java.util.function.Predicate;
+
+@Mixin(LocalPlayer.class)
+public abstract class LocalPlayerMixin {
+    @ModifyArg(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/ProjectileUtil;getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;"), index = 4)
+    private static Predicate<Entity> zhf$ignoreArmorStands(Predicate<Entity> original) {
+        return ZombiesHologramsbugFixClient.toggleZHF
+                ? original.and(entity -> !(entity instanceof ArmorStand)) : original;
+    }
+}
+'''
+        }
+    }
+}
+
+compileJava.dependsOn generateCompatSource
+tasks.matching { it.name == 'sourcesJar' }.configureEach { dependsOn generateCompatSource }
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.register('buildAllVersions') {
+    group = 'build'
+    description = 'Builds separate jars for Minecraft 1.21.5 through 1.21.11.'
+    doLast {
+        def versions = new Properties()
+        file('fabric-versions.properties').withInputStream { versions.load(it) }
+        def destination = file('multiversion-builds')
+        destination.mkdirs()
+        versions.each { mc, api ->
+            exec {
+                commandLine org.gradle.internal.os.OperatingSystem.current().windows ? 'gradlew.bat' : './gradlew',
+                        'clean', 'build', "-Pminecraft_version=${mc}", "-Pfabric_version=${api}"
+            }
+            copy {
+                from fileTree('build/libs') { include '*.jar'; exclude '*-sources.jar' }
+                into destination
+                rename { "${project.archives_base_name}-${project.mod_version}+${mc}.jar" }
+            }
+        }
+    }
+}
