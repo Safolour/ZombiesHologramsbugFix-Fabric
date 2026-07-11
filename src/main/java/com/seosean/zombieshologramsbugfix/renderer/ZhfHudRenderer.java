@@ -13,8 +13,8 @@ public final class ZhfHudRenderer {
         Minecraft client = Minecraft.getInstance();
         int labelX = graphics.guiWidth() - client.font.width("ZHF:  OFF");
         int stateX = graphics.guiWidth() - client.font.width("OFF");
-        graphics.drawString(client.font, "ZHF:", labelX, 0, 0xFFFFFF55, false);
+        graphics.drawString(client.font, "ZHF:", labelX, 1, 0xFFFFFF55, false);
         graphics.drawString(client.font, ZombiesHologramsbugFixClient.toggleZHF ? "ON" : "OFF",
-                stateX, 0, ZombiesHologramsbugFixClient.toggleZHF ? 0xFF55FF55 : 0xFFFF5555, false);
+                stateX, 1, ZombiesHologramsbugFixClient.toggleZHF ? 0xFF55FF55 : 0xFFFF5555, false);
     }
 }
