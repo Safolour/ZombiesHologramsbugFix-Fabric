@@ -3,6 +3,7 @@ package com.seosean.zombieshologramsbugfix.config;
 import com.seosean.zombieshologramsbugfix.ZombiesHologramsbugFixClient;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -16,7 +17,9 @@ public final class ZhfConfigScreen {
                 .setTitle(Component.literal("ZHF Configuration"));
         ConfigCategory general = builder.getOrCreateCategory(Component.literal("General"));
         general.addEntry(builder.entryBuilder()
-                .startBooleanToggle(Component.literal("(DANGER) Ignore Block Reactions"), config.ignoreBlockReactions)
+                .startBooleanToggle(Component.literal("(DANGER) ").withStyle(ChatFormatting.RED)
+                        .append(Component.literal("Ignore Block Reactions").withStyle(ChatFormatting.WHITE)),
+                        config.ignoreBlockReactions)
                 .setDefaultValue(false)
                 .setTooltip(Component.literal("Ignore Block Reactions"))
                 .setSaveConsumer(value -> config.ignoreBlockReactions = value)
